@@ -1,48 +1,133 @@
 import React, { useState } from "react";
-import axios from "axios";
+import {
+  Form,
+  Input,
+  Button,
+  Typography,
+  Divider,
+  message,
+} from "antd";
 import { useNavigate } from "react-router-dom";
-import "./Login.css"; // <-- Import CSS ici
+import axios from "axios";
+import { signInWithPopup } from "firebase/auth";
+import { auth, googleProvider } from "../firebase";
+import LoadingOverlay from "./LoadingOverlay";
+import "./Login.css";
 
-function Login() {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+const { Title } = Typography;
+
+const Login = () => {
+  const [form] = Form.useForm();
   const navigate = useNavigate();
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const handleLogin = async (values) => {
+    setLoading(true);
+    setErrorMessage("");
     try {
       const res = await axios.post("http://localhost:8084/api/auth/login", {
-        username,
-        password,
+        username: values.username,
+        password: values.password,
       });
+
       localStorage.setItem("token", res.data.token);
-      localStorage.setItem("username", username);
+      localStorage.setItem("username", values.username);
+      message.success("Connexion réussie !");
       navigate("/dashboard");
     } catch (error) {
-      alert("Login failed");
+      setErrorMessage("Nom d'utilisateur ou mot de passe incorrect.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    setLoading(true);
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
+
+      const response = await axios.post("http://localhost:8081/api/auth/google-login", {
+        email: user.email,
+        firstName: user.displayName?.split(" ")[0] || "",
+        lastName: user.displayName?.split(" ").slice(1).join(" ") || "",
+        photoUrl: user.photoURL,
+      });
+
+      const token = response.headers.authorization || response.data.token;
+      if (token) {
+        localStorage.setItem("token", token);
+        message.success("Connexion réussie avec Google !");
+        navigate("/dashboard");
+      }
+    } catch (err) {
+      console.error(err);
+      message.error("Échec de la connexion Google");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="login-container">
-      <form className="login-form" onSubmit={handleLogin}>
-        <h2>Connexion</h2>
-        <input
-          type="text"
-          placeholder="Nom d'utilisateur"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-        />
-        <input
-          type="password"
-          placeholder="Mot de passe"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <button type="submit">Se connecter</button>
-      </form>
+      {loading && <LoadingOverlay text="Connexion à votre compte..." />}
+      <Form
+        form={form}
+        layout="vertical"
+        onFinish={handleLogin}
+        className="login-form"
+      >
+        <Title level={2} style={{ color: "#ff6600" }}>
+          Connexion
+        </Title>
+
+        <Form.Item
+          name="username"
+          label="Nom d'utilisateur"
+          rules={[{ required: true, message: "Champ requis" }]}
+        >
+          <Input />
+        </Form.Item>
+
+        <Form.Item
+          name="password"
+          label="Mot de passe"
+          rules={[{ required: true, message: "Champ requis" }]}
+        >
+          <Input.Password />
+        </Form.Item>
+
+        {errorMessage && (
+          <div
+            style={{
+              color: "red",
+              textAlign: "center",
+              marginBottom: 16,
+              fontWeight: "bold",
+            }}
+          >
+            {errorMessage}
+          </div>
+        )}
+
+        <Button htmlType="submit" type="primary" className="btn-orange">
+          Se connecter
+        </Button>
+
+        <Divider>ou</Divider>
+
+        <Button className="google-button" onClick={handleGoogleLogin}>
+          <img
+            src="https://www.svgrepo.com/show/475656/google-color.svg"
+            alt="Google"
+          />
+          Se connecter avec Google
+        </Button>
+      </Form>
     </div>
   );
-}
+};
 
 export default Login;

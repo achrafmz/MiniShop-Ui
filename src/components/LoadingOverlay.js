@@ -8,7 +8,7 @@ const icons = [
   "https://www.svgrepo.com/show/227448/house-rent.svg",
 ];
 
-const LoadingOverlay = () => {
+const LoadingOverlay = ({ message = "Connexion à votre compte..." }) => {
   return (
     <div className="loading-overlay">
       <div className="loading-content">
@@ -17,7 +17,7 @@ const LoadingOverlay = () => {
             <img key={i} src={src} alt="icon" className={`rotating-icon delay-${i}`} />
           ))}
         </div>
-        <p>Création de votre compte...</p>
+        <p>{message}</p>
       </div>
     </div>
   );

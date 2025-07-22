@@ -13,7 +13,8 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import LoadingOverlay from "./LoadingOverlay";
 import "./Register.css";
-
+import { signInWithPopup } from "firebase/auth";
+import { auth, googleProvider } from "../firebase"; // Chemin vers ton fichier firebase.js
 const { Title } = Typography;
 
 const icons = [
@@ -38,6 +39,7 @@ const icons = [
 const Register = () => {
   const [visibleIcon, setVisibleIcon] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const [user, setUser] = useState({
     username: "",
     email: "",
@@ -48,7 +50,33 @@ const Register = () => {
   });
 
   const navigate = useNavigate();
+const handleGoogleSignIn = async () => {
+  setLoading(true);
+  try {
+    const result = await signInWithPopup(auth, googleProvider);
+    const user = result.user;
 
+    // Envoyer les infos utilisateur à ton backend
+    const response = await axios.post("http://localhost:8084/api/auth/google-login", {
+      email: user.email,
+      firstName: user.displayName?.split(' ')[0] || "",
+      lastName: user.displayName?.split(' ').slice(1).join(' ') || "",
+      photoUrl: user.photoURL
+    });
+
+    const token = response.headers.authorization || response.data.token;
+    if (token) {
+      localStorage.setItem("token", token);
+      message.success("Connexion réussie avec Google !");
+      navigate("/dashboard");
+    }
+  } catch (error) {
+    console.error("Erreur Google Login", error);
+    message.error("Échec de la connexion avec Google");
+  } finally {
+    setLoading(false);
+  }
+};
   useEffect(() => {
     const interval = setInterval(() => {
       setVisibleIcon((prev) => (prev + 1) % icons.length);
@@ -61,8 +89,10 @@ const Register = () => {
   };
 
   const handleRegister = async () => {
+    setErrorMessage(""); // Reset message d’erreur à chaque tentative
+
     if (user.password !== user.confirm) {
-      message.error("Les mots de passe ne correspondent pas");
+      setErrorMessage("Les mots de passe ne correspondent pas");
       return;
     }
 
@@ -75,10 +105,26 @@ const Register = () => {
         firstName: user.firstName,
         lastName: user.lastName,
       });
+      setErrorMessage("");
       message.success("Inscription réussie !");
       navigate("/login");
     } catch (error) {
-      message.error("Échec de l'inscription");
+      if (error.response && error.response.data) {
+        const data = error.response.data;
+
+        if (
+          data.message &&
+          data.message.toLowerCase().includes("email") &&
+          (data.message.toLowerCase().includes("exist") ||
+            data.message.toLowerCase().includes("déjà"))
+        ) {
+          setErrorMessage("Cet email est déjà utilisé, veuillez en choisir un autre.");
+        } else {
+          setErrorMessage("Cet email est déjà utilisé, veuillez en choisir un autre.");
+        }
+      } else {
+        setErrorMessage("Erreur réseau ou serveur indisponible");
+      }
     } finally {
       setLoading(false);
     }
@@ -135,20 +181,20 @@ const Register = () => {
               </Col>
             </Row>
             <Form.Item
-  name="password"
-  label="Mot de passe"
-  rules={[
-    { required: true, message: "Champ requis" },
-    {
-      pattern: /^(?=.*[A-Z]).{8,}$/,
-      message: "Le mot de passe doit contenir au moins 8 caractères et une lettre majuscule",
-    },
-  ]}
-  hasFeedback
->
-  <Input.Password />
-</Form.Item>
-
+              name="password"
+              label="Mot de passe"
+              rules={[
+                { required: true, message: "Champ requis" },
+                {
+                  pattern: /^(?=.*[A-Z]).{8,}$/,
+                  message:
+                    "Le mot de passe doit contenir au moins 8 caractères et une lettre majuscule",
+                },
+              ]}
+              hasFeedback
+            >
+              <Input.Password />
+            </Form.Item>
             <Form.Item
               name="confirm"
               label="Confirmer le mot de passe"
@@ -170,17 +216,33 @@ const Register = () => {
             >
               <Input.Password />
             </Form.Item>
+
+            {/* Affichage du message d’erreur en rouge */}
+            {errorMessage && (
+              <div
+                style={{
+                  color: "red",
+                  marginBottom: 16,
+                  textAlign: "center",
+                  fontWeight: "bold",
+                }}
+              >
+                {errorMessage}
+              </div>
+            )}
+
             <Button type="primary" htmlType="submit" className="orange-button">
               S'inscrire
             </Button>
             <Divider>ou</Divider>
-            <Button className="google-btn">
-              <img
-                src="https://www.svgrepo.com/show/475656/google-color.svg"
-                alt="Google"
-              />
-              Connecte avec Google
-            </Button>
+            <Button className="google-btn" type="button" onClick={handleGoogleSignIn}>
+  <img
+    src="https://www.svgrepo.com/show/475656/google-color.svg "
+    alt="Google"
+    style={{ width: 20, marginRight: 8 }}
+  />
+  Connecte avec Google
+</Button>
           </Form>
         </Col>
 
@@ -199,8 +261,9 @@ const Register = () => {
             <div className="right-text">
               <h3>Publiez. Achetez. Louez.</h3>
               <p>
-                Anmoun vous permet de poster et découvrir les meilleures annonces en ligne que ce soit
-                pour vendre des vêtements, louer une maison ou acheter une voiture !
+                Anmoun vous permet de poster et découvrir les meilleures annonces en
+                ligne que ce soit pour vendre des vêtements, louer une maison ou
+                acheter une voiture !
               </p>
             </div>
           </div>

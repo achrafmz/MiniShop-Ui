@@ -1,3 +1,4 @@
+// src/components/Login.js
 import React, { useState } from "react";
 import {
   Form,
@@ -49,19 +50,18 @@ const Login = () => {
       const result = await signInWithPopup(auth, googleProvider);
       const user = result.user;
 
-      const response = await axios.post("http://localhost:8081/api/auth/google-login", {
-        email: user.email,
-        firstName: user.displayName?.split(" ")[0] || "",
-        lastName: user.displayName?.split(" ").slice(1).join(" ") || "",
-        photoUrl: user.photoURL,
-      });
+      // Tu peux aussi faire un appel à ton backend ici
+      // const response = await axios.post("http://localhost:8081/api/auth/google-login", { ... });
 
-      const token = response.headers.authorization || response.data.token;
-      if (token) {
-        localStorage.setItem("token", token);
-        message.success("Connexion réussie avec Google !");
-        navigate("/dashboard");
-      }
+      // Simuler la réussite de la connexion
+      const token = "FAKE_TOKEN_FROM_GOOGLE"; // ou response.data.token si backend disponible
+      const fullName = user.displayName || user.email;
+
+      localStorage.setItem("token", token);
+      localStorage.setItem("username", fullName);
+
+      message.success("Connexion réussie avec Google !");
+      navigate("/dashboard");
     } catch (err) {
       console.error(err);
       message.error("Échec de la connexion Google");
@@ -125,6 +125,13 @@ const Login = () => {
           />
           Se connecter avec Google
         </Button>
+
+        <div style={{ marginTop: 24, textAlign: "center" }}>
+          <span>Vous n'avez pas de compte ? </span>
+          <a href="/register" style={{ color: "#ff6600", fontWeight: "bold" }}>
+            Créer un compte
+          </a>
+        </div>
       </Form>
     </div>
   );

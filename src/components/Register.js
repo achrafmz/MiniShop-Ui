@@ -50,33 +50,30 @@ const Register = () => {
   });
 
   const navigate = useNavigate();
-const handleGoogleSignIn = async () => {
-  setLoading(true);
-  try {
-    const result = await signInWithPopup(auth, googleProvider);
-    const user = result.user;
+ const handleGoogleSignIn = async () => {
+    setLoading(true);
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
+      // Ici simule un appel backend (ou tu peux faire ton axios)
+      // on simule token reçu
+      const fakeToken = "123456789";
 
-    // Envoyer les infos utilisateur à ton backend
-    const response = await axios.post("http://localhost:8084/api/auth/google-login", {
-      email: user.email,
-      firstName: user.displayName?.split(' ')[0] || "",
-      lastName: user.displayName?.split(' ').slice(1).join(' ') || "",
-      photoUrl: user.photoURL
-    });
-
-    const token = response.headers.authorization || response.data.token;
-    if (token) {
-      localStorage.setItem("token", token);
-      message.success("Connexion réussie avec Google !");
-      navigate("/dashboard");
+      if (fakeToken) {
+        localStorage.setItem("token", fakeToken);
+        localStorage.setItem("username", user.displayName || user.email);
+        message.success("Connexion réussie avec Google !");
+        console.log("Navigating to dashboard...");
+        navigate("/dashboard");
+      }
+    } catch (error) {
+      console.error(error);
+      message.error("Erreur lors de la connexion Google");
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    console.error("Erreur Google Login", error);
-    message.error("Échec de la connexion avec Google");
-  } finally {
-    setLoading(false);
-  }
-};
+  };
+
   useEffect(() => {
     const interval = setInterval(() => {
       setVisibleIcon((prev) => (prev + 1) % icons.length);
@@ -243,6 +240,12 @@ const handleGoogleSignIn = async () => {
   />
   Connecte avec Google
 </Button>
+<div style={{ marginTop: 24, textAlign: "center" }}>
+  <span>Dejà un compte ? </span>
+  <a href="/login" style={{ color: "#ff6600", fontWeight: "bold" }}>
+    Connectez-vous
+  </a>
+</div>
           </Form>
         </Col>
 

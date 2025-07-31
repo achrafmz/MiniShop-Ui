@@ -8,7 +8,7 @@ const icons = [
   "https://www.svgrepo.com/show/227448/house-rent.svg",
 ];
 
-const LoadingOverlay = ({ message = "Connexion à votre compte..." }) => {
+const LoadingOverlay = ({ message = "" }) => {
   return (
     <div className="loading-overlay">
       <div className="loading-content">

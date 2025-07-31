@@ -1,0 +1,99 @@
+/* src/components/AnnonceCard.css */
+.anonce-card {
+  display: flex;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  background: white;
+  max-width: 600px;
+  margin: 20px auto;
+}
+
+.anonce-image {
+  width: 200px;
+  height: 200px;
+  object-fit: cover;
+}
+
+.anonce-image.placeholder {
+  background: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #999;
+  font-style: italic;
+}
+
+.anonce-content {
+  padding: 16px;
+  flex: 1;
+}
+
+.anonce-title {
+  margin: 0 0 8px 0;
+  font-size: 1.3em;
+  color: #333;
+}
+
+.anonce-description {
+  color: #666;
+  font-size: 0.95em;
+  line-height: 1.5;
+  margin: 8px 0;
+}
+
+.anonce-price {
+  font-size: 1.2em;
+  color: #fa6400;
+  margin: 10px 0;
+}
+
+.anonce-location {
+  color: #555;
+  font-size: 0.9em;
+}
+
+.anonceur {
+  margin: 15px 0;
+  padding: 10px;
+  background: #f9f9f9;
+  border-radius: 8px;
+  font-size: 0.95em;
+  color: #444;
+  border: 1px dashed #ddd;
+}
+
+.anonce-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.btn-whatsapp,
+.btn-call {
+  flex: 1;
+  text-align: center;
+  padding: 10px;
+  color: white;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 0.95em;
+}
+
+.btn-whatsapp {
+  background-color: #25d366;
+}
+
+.btn-call {
+  background-color: #007bff;
+}
+
+.btn-whatsapp:hover,
+.btn-call:hover {
+  opacity: 0.9;
+  transform: scale(1.02);
+  transition: all 0.2s;
+}

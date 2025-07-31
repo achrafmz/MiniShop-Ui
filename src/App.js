@@ -4,6 +4,8 @@ import Login from "./components/Login";
 import Register from "./components/Register";
 import Dashboard from "./components/Dashboard";
 import UserList from "./components/UserList";
+import AddAnnonce from "./components/AddAnnonce";
+import CategoryManagement from "./components/CategoryManagement";
 
 
 function App() {
@@ -14,6 +16,8 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/userlist" element={<UserList />} />
+        <Route path="/add-annonce" element={<AddAnnonce />} />
+        <Route path="/Categories" element={<CategoryManagement />} />
 
       </Routes>
     </Router>
